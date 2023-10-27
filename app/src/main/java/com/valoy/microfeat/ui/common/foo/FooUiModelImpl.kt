@@ -5,6 +5,7 @@ import com.valoy.microfeat.ui.dto.FooDto
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class FooUiModelImpl @AssistedInject constructor(
     private val getFoo: GetFoo,
@@ -34,8 +36,11 @@ class FooUiModelImpl @AssistedInject constructor(
 
     override fun onGoToBarClicked() {
         coroutineScope.launch {
-            _action.send(FooAction.ShowToast("Message"))
+           sendAction(FooAction.ShowToast("Message"))
         }
     }
 
+    private suspend fun sendAction(action: FooAction) = withContext(Dispatchers.Main.immediate) {
+        _action.send(action)
+    }
 }

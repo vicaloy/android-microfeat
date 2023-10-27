@@ -1,5 +1,6 @@
 package com.valoy.microfeat.ui.common.composable
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
@@ -17,8 +18,10 @@ import androidx.lifecycle.lifecycleScope
 import com.valoy.microfeat.ui.common.foo.FooAction
 import com.valoy.microfeat.ui.common.foo.FooUiModel
 import com.valoy.microfeat.ui.common.foo.FooUiState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.withContext
 
 @Composable
 fun Foo(uiModel: FooUiModel) {
@@ -41,25 +44,30 @@ fun Foo(uiModel: FooUiModel) {
     }
 
     LaunchedEffect(lifecycle) {
-        uiModel.action
-            .flowWithLifecycle(
-                lifecycle = lifecycle,
-                minActiveState = Lifecycle.State.STARTED
-            )
-            .onEach {
-                when (it) {
-                    is FooAction.ShowToast -> {
-                        Toast.makeText(
-                            context,
-                            it.message,
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
+        withContext(Dispatchers.Main.immediate) {
+            uiModel.action
+                .flowWithLifecycle(
+                    lifecycle = lifecycle,
+                    minActiveState = Lifecycle.State.STARTED
+                )
+                .onEach {
+                    when (it) {
+                        is FooAction.ShowToast -> {
+                            Toast.makeText(
+                                context,
+                                it.message,
+                                Toast.LENGTH_LONG
+                            ).show()
 
-                    else -> {}
+                            Log.d("Foo", "ShowToast")
+                        }
+
+                        else -> {}
+                    }
                 }
-            }
-            .launchIn(lifecycleScope)
+                .launchIn(lifecycleScope)
+        }
+
     }
 }
 
